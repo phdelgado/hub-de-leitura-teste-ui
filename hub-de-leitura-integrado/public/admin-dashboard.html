@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hub de Leitura - Admin Dashboard</title>
+    <link rel="icon" type="image/svg+xml" href="/images/favicon.svg?v=2024">
+    <link rel="shortcut icon" href="/images/favicon.svg?v=2024">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/admin.css">
+    <style>
+        .admin-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+            border-left: 4px solid #0d6efd;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #0d6efd;
+        }
+
+        .admin-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .action-btn {
+            min-width: 200px;
+            margin-bottom: 1rem;
+        }
+
+        .books-table {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .table th {
+            background: #f8f9fa;
+            border: none;
+            font-weight: 600;
+        }
+
+        .book-cover-small {
+            width: 40px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        .status-badge {
+            font-size: 0.8rem;
+        }
+
+        .quick-stats {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1rem;
+        }
+
+        /* Fix para o modal não ficar atrás do header */
+        .modal {
+            z-index: 1060;
+        }
+
+        .modal-backdrop {
+            z-index: 1055;
+        }
+
+        /* Ajuste do header fixo */
+        body {
+            padding-top: 100px;
+        }
+
+        .fixed-header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1050;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="header" class="fixed-header"></div>
+
+    <div id="alert-container" class="alert d-none"
+        style="position: fixed; top: 120px; left: 50%; transform: translateX(-50%); z-index: 1070; max-width: 500px;">
+    </div>
+
+    <main class="container mt-3">
+        <!-- Cabeçalho Admin -->
+        <div class="admin-header text-center">
+            <h1><i class="fas fa-cog fa-spin"></i> Painel Administrativo</h1>
+            <p class="mb-0">Gerencie livros, reservas e usuários do Hub de Leitura</p>
+            <small class="opacity-75">Acesso restrito a administradores</small>
+        </div>
+
+        <!-- Estatísticas Gerais -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="stat-card text-center">
+                    <i class="fas fa-book fa-2x text-primary mb-2"></i>
+                    <div class="stat-number" id="total-books">-</div>
+                    <small class="text-muted">Total de Livros</small>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="stat-card text-center">
+                    <i class="fas fa-bookmark fa-2x text-warning mb-2"></i>
+                    <div class="stat-number" id="active-reservations">-</div>
+                    <small class="text-muted">Reservas Ativas</small>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="stat-card text-center">
+                    <i class="fas fa-users fa-2x text-success mb-2"></i>
+                    <div class="stat-number" id="total-users">-</div>
+                    <small class="text-muted">Usuários Cadastrados</small>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="stat-card text-center">
+                    <i class="fas fa-exclamation-triangle fa-2x text-danger mb-2"></i>
+                    <div class="stat-number" id="low-stock-books">-</div>
+                    <small class="text-muted">Estoque Baixo</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Coluna Principal -->
+            <div class="col-lg-8">
+                <!-- Ações Rápidas -->
+                <div class="admin-card">
+                    <h4><i class="fas fa-bolt text-primary"></i> Ações Rápidas</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <button class="btn btn-primary action-btn" onclick="goToAdminBooks()">
+                                <i class="fas fa-book"></i> Gerenciar Livros
+                            </button>
+                            <button class="btn btn-outline-info action-btn" onclick="viewReservations()">
+                                <i class="fas fa-bookmark"></i> Ver Reservas
+                            </button>
+                            <button class="btn btn-outline-success action-btn" onclick="viewUsers()">
+                                <i class="fas fa-users"></i> Gerenciar Usuários
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <button class="btn btn-outline-warning action-btn" onclick="exportData()">
+                                <i class="fas fa-download"></i> Exportar Dados
+                            </button>
+                            <button class="btn btn-outline-secondary action-btn" onclick="importBooks()">
+                                <i class="fas fa-upload"></i> Importar Livros
+                            </button>
+                            <button class="btn btn-outline-dark action-btn" onclick="viewLogs()">
+                                <i class="fas fa-file-alt"></i> Logs do Sistema
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Livros Recentes -->
+                <div class="admin-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4><i class="fas fa-book text-primary"></i> Livros Adicionados Recentemente</h4>
+                        <button class="btn btn-outline-primary btn-sm" onclick="goToAdminBooks()">
+                            <i class="fas fa-external-link-alt"></i> Gerenciar Todos
+                        </button>
+                    </div>
+
+                    <!-- Loading -->
+                    <div id="recent-books-loading" class="text-center py-3">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Carregando...</span>
+                        </div>
+                    </div>
+
+                    <!-- Tabela de Livros -->
+                    <div id="recent-books-table" class="d-none">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Livro</th>
+                                        <th>Autor</th>
+                                        <th>Categoria</th>
+                                        <th>Estoque</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recent-books-tbody">
+                                    <!-- Livros serão inseridos aqui -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coluna Lateral -->
+            <div class="col-lg-4">
+                <!-- Alertas -->
+                <div class="admin-card">
+                    <h5><i class="fas fa-bell text-warning"></i> Alertas</h5>
+                    <div id="admin-alerts">
+                        <div class="text-center py-3">
+                            <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                <span class="visually-hidden">Carregando...</span>
+                            </div>
+                            <span class="ms-2">Verificando alertas...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Estatísticas Rápidas -->
+                <div class="admin-card">
+                    <h5><i class="fas fa-chart-line text-success"></i> Resumo Hoje</h5>
+                    <div class="quick-stats">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Novas reservas:</span>
+                            <strong id="today-reservations">-</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Livros retirados:</span>
+                            <strong id="today-pickups">-</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Devoluções:</span>
+                            <strong id="today-returns">-</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Reservas expiradas:</span>
+                            <strong id="today-expired" class="text-danger">-</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Livros Populares -->
+                <div class="admin-card">
+                    <h5><i class="fas fa-star text-warning"></i> Livros Mais Reservados</h5>
+                    <div id="popular-books">
+                        <div class="text-center py-3">
+                            <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                <span class="visually-hidden">Carregando...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Verificar se é admin
+            const isAdmin = localStorage.getItem('isAdmin') === 'true' || localStorage.getItem('isAdmin') === '1';
+            const token = localStorage.getItem('authToken');
+
+            if (!token || !isAdmin) {
+                alert('Acesso negado. Apenas administradores podem acessar esta página.');
+                window.location.href = '/login.html';
+                return;
+            }
+
+            // Inicializar dashboard
+            loadDashboardData();
+        });
+
+        function loadDashboardData() {
+            console.log('Carregando dados do dashboard admin...');
+
+            // Carregar estatísticas gerais
+            loadGeneralStats();
+
+            // Carregar livros recentes
+            loadRecentBooks();
+
+            // Carregar alertas
+            loadAdminAlerts();
+
+            // Carregar estatísticas do dia
+            loadTodayStats();
+
+            // Carregar livros populares
+            loadPopularBooks();
+        }
+
+ function loadGeneralStats() {
+            const token = localStorage.getItem('authToken');
+            
+            // 1. Buscar total de livros (CORRIGIDO)
+            fetch('/api/books', {
+                headers: { 'Authorization': token }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error(`Books API: ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                console.log('📚 Dados de livros completos:', data);
+                
+                // Verificar todas as possíveis estruturas de resposta
+                let totalBooks = 0;
+                let booksArray = [];
+                
+                if (Array.isArray(data)) {
+                    // Resposta é array direto
+                    totalBooks = data.length;
+                    booksArray = data;
+                    console.log('📚 Estrutura: Array direto com', totalBooks, 'livros');
+                } else if (data.books && Array.isArray(data.books)) {
+                    // Resposta tem propriedade books
+                    totalBooks = data.books.length;
+                    booksArray = data.books;
+                    console.log('📚 Estrutura: Objeto com books array -', totalBooks, 'livros');
+                } else if (data.pagination && data.pagination.totalBooks) {
+                    // Resposta tem paginação
+                    totalBooks = data.pagination.totalBooks;
+                    booksArray = data.books || [];
+                    console.log('📚 Estrutura: Com paginação -', totalBooks, 'livros total');
+                } else if (data.total) {
+                    // Resposta tem campo total
+                    totalBooks = data.total;
+                    booksArray = data.books || data.data || [];
+                    console.log('📚 Estrutura: Com total -', totalBooks, 'livros');
+                } else {
+                    console.warn('📚 Estrutura de dados não reconhecida:', Object.keys(data));
+                    totalBooks = '?';
+                }
+                
+                document.getElementById('total-books').textContent = totalBooks;
+                
+                // Verificar livros com estoque baixo
+                const lowStockBooks = booksArray.filter(book => 
+                    book && book.available_copies <= 1 && book.available_copies > 0
+                ).length;
+                
+                document.getElementById('low-stock-books').textContent = lowStockBooks;
+                
+                console.log('📚 Estatísticas:', { totalBooks, lowStockBooks });
+            })
+            .catch(error => {
+                console.error('❌ Erro ao carregar estatísticas de livros:', error);
+                document.getElementById('total-books').textContent = 'Erro';
+                document.getElementById('low-stock-books').textContent = 'Erro';
+                
+                // Tentar método alternativo - buscar apenas contagem
+                fetch('/api/books?count=true', {
+                    headers: { 'Authorization': token }
+                })
+                .then(response => response.json())
+                .then(countData => {
+                    console.log('📚 Dados de contagem:', countData);
+                    if (countData.count || countData.total) {
+                        document.getElementById('total-books').textContent = countData.count || countData.total;
+                    }
+                })
+                .catch(countError => {
+                    console.error('❌ Erro ao carregar contagem de livros:', countError);
+                });
+            });
+
+            // 2. Buscar reservas ativas (CORRIGIDO: usar endpoint do admin)
+            fetch('/api/admin/reservations', {
+                headers: { 'Authorization': token }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error(`Admin Reservations API: ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                console.log('📋 Dados de reservas admin:', data);
+                
+                // A API admin retorna { reservations: [...], total: N }
+                const reservations = data.reservations || [];
+                const activeReservations = reservations.filter(r => 
+                    r.status === 'active' || r.calculated_status === 'active'
+                ).length;
+                
+                document.getElementById('active-reservations').textContent = activeReservations;
+            })
+            .catch(error => {
+                console.error('❌ Erro ao carregar reservas admin:', error);
+                document.getElementById('active-reservations').textContent = '?';
+            });
+
+            // 3. Buscar total de usuários (CORRIGIDO: usar endpoint do admin)
+            fetch('/api/admin/users', {
+                headers: { 'Authorization': token }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    // Fallback: tentar endpoint de usuários normal
+                    return fetch('/api/users', {
+                        headers: { 'Authorization': token }
+                    });
+                }
+                return response;
+            })
+            .then(response => {
+                if (!response.ok) throw new Error(`Users API: ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                console.log('👥 Dados de usuários:', data);
+                
+                // Pode ser array direto ou objeto com pagination
+                const totalUsers = data.pagination ? data.pagination.totalUsers : 
+                                 data.users ? data.users.length : 
+                                 Array.isArray(data) ? data.length : 0;
+                
+                document.getElementById('total-users').textContent = totalUsers;
+            })
+            .catch(error => {
+                console.error('❌ Erro ao carregar usuários:', error);
+                document.getElementById('total-users').textContent = '?';
+            });
+        }
+
+        function loadRecentBooks() {
+            const token = localStorage.getItem('authToken');
+
+            fetch('/api/books?limit=5&sort=recent', {
+                headers: { 'Authorization': token }
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error(`Books API: ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('📚 Livros recentes:', data);
+
+                    const books = data.books || [];
+                    displayRecentBooks(books.slice(0, 5));
+                    document.getElementById('recent-books-loading').classList.add('d-none');
+                    document.getElementById('recent-books-table').classList.remove('d-none');
+                })
+                .catch(error => {
+                    console.error('❌ Erro ao carregar livros recentes:', error);
+                    document.getElementById('recent-books-loading').innerHTML =
+                        '<div class="alert alert-danger py-2"><small><i class="fas fa-exclamation-triangle"></i> Erro ao carregar livros</small></div>';
+                });
+        }
+
+        function displayRecentBooks(books) {
+            const tbody = document.getElementById('recent-books-tbody');
+            tbody.innerHTML = '';
+
+            books.forEach(book => {
+                const row = document.createElement('tr');
+                const isAvailable = book.available_copies > 0;
+                const stockStatus = book.available_copies <= 1 ? 'danger' :
+                    book.available_copies <= 3 ? 'warning' : 'success';
+
+                row.innerHTML = `
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <img src="images/books/${book.cover_image || 'livro-padrao.png'}" 
+                                 class="book-cover-small me-2" alt="${book.title}">
+                            <div>
+                                <strong>${book.title}</strong><br>
+                                <small class="text-muted">ID: ${book.id}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>${book.author}</td>
+                    <td><span class="badge bg-secondary">${book.category}</span></td>
+                    <td>
+                        <span class="badge bg-${stockStatus}">${book.available_copies}/${book.total_copies}</span>
+                    </td>
+                    <td>
+                        <span class="badge ${isAvailable ? 'bg-success' : 'bg-danger'} status-badge">
+                            ${isAvailable ? 'Disponível' : 'Esgotado'}
+                        </span>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function loadAdminAlerts() {
+            const token = localStorage.getItem('authToken');
+
+            // Carregar alertas baseados em dados reais
+            Promise.all([
+                // Livros com estoque baixo
+                fetch('/api/books', { headers: { 'Authorization': token } })
+                    .then(r => r.json())
+                    .then(data => {
+                        const lowStock = data.books ? data.books.filter(book =>
+                            book.available_copies <= 2 && book.available_copies > 0
+                        ).length : 0;
+                        return { type: 'warning', count: lowStock, message: `${lowStock} livros com estoque baixo`, icon: 'fa-exclamation-triangle' };
+                    }),
+
+                // Reservas vencendo hoje
+                fetch('/api/admin/reservations', { headers: { 'Authorization': token } })
+                    .then(r => r.json())
+                    .then(data => {
+                        const today = new Date().toDateString();
+                        const expiring = data.reservations ? data.reservations.filter(r => {
+                            if (!r.pickup_deadline) return false;
+                            const deadline = new Date(r.pickup_deadline);
+                            return deadline.toDateString() === today && r.status === 'active';
+                        }).length : 0;
+                        return { type: 'info', count: expiring, message: `${expiring} reservas vencendo hoje`, icon: 'fa-clock' };
+                    })
+            ])
+                .then(alerts => {
+                    const alertsContainer = document.getElementById('admin-alerts');
+                    alertsContainer.innerHTML = '';
+
+                    // Adicionar alerta de sistema sempre
+                    alerts.push({ type: 'success', message: 'Sistema funcionando normalmente', icon: 'fa-check-circle' });
+
+                    alerts.forEach(alert => {
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = `alert alert-${alert.type} py-2 px-3 mb-2`;
+                        alertDiv.innerHTML = `
+                        <i class="fas ${alert.icon}"></i>
+                        <small>${alert.message}</small>
+                    `;
+                        alertsContainer.appendChild(alertDiv);
+                    });
+                })
+                .catch(error => {
+                    console.error('❌ Erro ao carregar alertas:', error);
+                    const alertsContainer = document.getElementById('admin-alerts');
+                    alertsContainer.innerHTML = `
+                    <div class="alert alert-warning py-2">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <small>Erro ao carregar alertas</small>
+                    </div>
+                `;
+                });
+        }
+
+        function loadTodayStats() {
+            const token = localStorage.getItem('authToken');
+
+            // Buscar estatísticas reais do dia
+            fetch('/api/admin/reservations', {
+                headers: { 'Authorization': token }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    const reservations = data.reservations || [];
+                    const today = new Date().toDateString();
+
+                    // Calcular estatísticas do dia
+                    const todayReservations = reservations.filter(r => {
+                        const resDate = new Date(r.reservation_date);
+                        return resDate.toDateString() === today;
+                    }).length;
+
+                    const todayPickups = reservations.filter(r => {
+                        if (!r.pickup_date) return false;
+                        const pickupDate = new Date(r.pickup_date);
+                        return pickupDate.toDateString() === today;
+                    }).length;
+
+                    const todayReturns = reservations.filter(r => {
+                        if (!r.return_date) return false;
+                        const returnDate = new Date(r.return_date);
+                        return returnDate.toDateString() === today;
+                    }).length;
+
+                    const todayExpired = reservations.filter(r => {
+                        return r.calculated_status === 'expired';
+                    }).length;
+
+                    // Atualizar interface
+                    document.getElementById('today-reservations').textContent = todayReservations;
+                    document.getElementById('today-pickups').textContent = todayPickups;
+                    document.getElementById('today-returns').textContent = todayReturns;
+                    document.getElementById('today-expired').textContent = todayExpired;
+
+                    console.log('📊 Estatísticas do dia:', { todayReservations, todayPickups, todayReturns, todayExpired });
+                })
+                .catch(error => {
+                    console.error('❌ Erro ao carregar estatísticas do dia:', error);
+                    // Fallback para dados simulados
+                    document.getElementById('today-reservations').textContent = '-';
+                    document.getElementById('today-pickups').textContent = '-';
+                    document.getElementById('today-returns').textContent = '-';
+                    document.getElementById('today-expired').textContent = '-';
+                });
+        }
+
+        function loadPopularBooks() {
+            const token = localStorage.getItem('authToken');
+
+            fetch('/api/admin/reservations', {
+                headers: { 'Authorization': token }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    const reservations = data.reservations || [];
+
+                    // Contar reservas por livro
+                    const bookCounts = {};
+                    reservations.forEach(r => {
+                        const key = `${r.book_id}-${r.title}`;
+                        bookCounts[key] = (bookCounts[key] || 0) + 1;
+                    });
+
+                    // Ordenar por popularidade
+                    const popularBooks = Object.entries(bookCounts)
+                        .map(([key, count]) => {
+                            const [bookId, title] = key.split('-');
+                            return { title: title || 'Título não disponível', reservations: count };
+                        })
+                        .sort((a, b) => b.reservations - a.reservations)
+                        .slice(0, 5);
+
+                    const popularContainer = document.getElementById('popular-books');
+
+                    if (popularBooks.length === 0) {
+                        popularContainer.innerHTML = '<p class="text-muted small">Nenhuma reserva ainda</p>';
+                        return;
+                    }
+
+                    let popularHtml = '';
+                    popularBooks.forEach((book, index) => {
+                        popularHtml += `
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="small">
+                                <strong>${index + 1}.</strong> ${book.title}
+                            </span>
+                            <span class="badge bg-primary">${book.reservations}</span>
+                        </div>
+                    `;
+                    });
+
+                    popularContainer.innerHTML = popularHtml;
+                    console.log('⭐ Livros populares:', popularBooks);
+                })
+                .catch(error => {
+                    console.error('❌ Erro ao carregar livros populares:', error);
+                    document.getElementById('popular-books').innerHTML =
+                        '<p class="text-muted small">Erro ao carregar dados</p>';
+                });
+        }
+
+        // Funções de navegação
+        function goToAdminBooks() {
+            window.location.href = './admin-books.html';
+        }
+
+        function viewReservations() {
+            window.location.href = 'admin-reservations.html';
+        }
+
+        function viewUsers() {
+            showAlert('Funcionalidade de gerenciamento de usuários será implementada em breve', 'info');
+        }
+
+        function exportData() {
+            showAlert('Funcionalidade de exportação será implementada em breve', 'info');
+        }
+
+        function importBooks() {
+            showAlert('Funcionalidade de importação será implementada em breve', 'info');
+        }
+
+        function viewLogs() {
+            showAlert('Funcionalidade de logs será implementada em breve', 'info');
+        }
+
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alert-container');
+            const iconClass = type === 'success' ? 'fa-check-circle' :
+                type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle';
+
+            alertContainer.className = `alert alert-${type}`;
+            alertContainer.innerHTML = `<i class="fas ${iconClass}"></i> ${message}`;
+            alertContainer.classList.remove('d-none');
+
+            setTimeout(() => {
+                alertContainer.classList.add('d-none');
+            }, 5000);
+        }
+
+        // Sistema educacional para mostrar expiração do token
+        // Adicione no admin-dashboard.html e admin-books.html
+
+        class EducationalTokenManager {
+            constructor() {
+                this.warningShown = false;
+                this.timerInterval = null;
+                this.init();
+            }
+
+            init() {
+                this.createTokenTimer();
+                this.startTokenCheck();
+                this.showEducationalInfo();
+                
+                // Expor métodos globalmente para manipulação via DevTools
+                window.tokenManager = this;
+                console.log('🎓 TokenManager disponível globalmente para testes!');
+                console.log('📋 Comandos disponíveis:');
+                console.log('   tokenManager.showEducationalModal() - Forçar modal educacional');
+                console.log('   tokenManager.getCookie("jwt_education_shown") - Ver cookie');
+                console.log('   tokenManager.setCookie("jwt_education_shown", "true", 30) - Definir cookie');
+                console.log('   tokenManager.deleteCookie("jwt_education_shown") - Remover cookie');
+                console.log('   tokenManager.resetEducationalModal() - Resetar para mostrar novamente');
+            }
+
+            // Métodos de manipulação de cookies para fins didáticos
+            setCookie(name, value, days = 30) {
+                const date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                document.cookie = `${name}=${value};expires=${date.toUTCString()};path=/`;
+                console.log(`🍪 Cookie definido: ${name}=${value} (${days} dias)`);
+                return true;
+            }
+
+            getCookie(name) {
+                const cookies = document.cookie.split(';');
+                for (let cookie of cookies) {
+                    const [cookieName, cookieValue] = cookie.trim().split('=');
+                    if (cookieName === name) {
+                        console.log(`🍪 Cookie lido: ${name}=${cookieValue}`);
+                        return cookieValue;
+                    }
+                }
+                console.log(`🍪 Cookie não encontrado: ${name}`);
+                return null;
+            }
+
+            deleteCookie(name) {
+                document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/`;
+                console.log(`🍪 Cookie removido: ${name}`);
+                return true;
+            }
+
+            // Métodos para controle do modal educacional
+            showEducationalModal() {
+                console.log('🎓 Forçando exibição do modal educacional...');
+                this.deleteCookie('jwt_education_shown');
+                setTimeout(() => {
+                    this.showEducationalInfo();
+                }, 100);
+            }
+
+            resetEducationalModal() {
+                console.log('🔄 Resetando modal educacional...');
+                this.deleteCookie('jwt_education_shown');
+                alert('Modal educacional foi resetado! Recarregue a página para vê-lo novamente.');
+            }
+
+            createTokenTimer() {
+                // Criar elemento de timer no header
+                const timerElement = document.createElement('div');
+                timerElement.id = 'token-timer';
+                timerElement.style.cssText = `
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #17a2b8;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 1060;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        `;
+                document.body.appendChild(timerElement);
+            }
+
+            updateTimer() {
+                const token = localStorage.getItem('authToken');
+                const timerElement = document.getElementById('token-timer');
+
+                if (!token || !timerElement) return;
+
+                try {
+                    const cleanToken = token.replace('Bearer ', '');
+                    const payload = JSON.parse(atob(cleanToken.split('.')[1]));
+                    const expirationTime = payload.exp * 1000;
+                    const currentTime = Date.now();
+                    const timeLeft = expirationTime - currentTime;
+
+                    if (timeLeft <= 0) {
+                        this.handleExpiredToken();
+                        return;
+                    }
+
+                    const minutes = Math.floor(timeLeft / 60000);
+                    const seconds = Math.floor((timeLeft % 60000) / 1000);
+
+                    // Mudar cor baseado no tempo restante
+                    if (minutes < 5) {
+                        timerElement.style.background = '#dc3545'; // Vermelho
+                        if (!this.warningShown) {
+                            this.showExpirationWarning(minutes);
+                        }
+                    } else if (minutes < 15) {
+                        timerElement.style.background = '#ffc107'; // Amarelo
+                        timerElement.style.color = '#000';
+                    } else {
+                        timerElement.style.background = '#17a2b8'; // Azul
+                        timerElement.style.color = '#fff';
+                    }
+
+                    timerElement.innerHTML = `
+                <i class="fas fa-clock"></i> Sessão: ${minutes}m ${seconds}s
+                <br><small>Clique para renovar</small>
+            `;
+
+                    // Adicionar click para renovar (re-login)
+                    timerElement.onclick = () => this.showRenewalOptions();
+
+                } catch (error) {
+                    console.error('Erro ao verificar token:', error);
+                    this.handleExpiredToken();
+                }
+            }
+
+            startTokenCheck() {
+                this.updateTimer(); // Primeira verificação
+                this.timerInterval = setInterval(() => {
+                    this.updateTimer();
+                }, 1000); // Atualizar a cada segundo
+            }
+
+            showExpirationWarning(minutesLeft) {
+                this.warningShown = true;
+
+                const modal = document.createElement('div');
+                modal.innerHTML = `
+            <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5);">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header bg-warning">
+                            <h5 class="modal-title">
+                                <i class="fas fa-exclamation-triangle"></i> 
+                                Sessão Expirando
+                            </h5>
+                        </div>
+                        <div class="modal-body">
+                            <p><strong>Sua sessão expirará em ${minutesLeft} minutos!</strong></p>
+                            <div class="alert alert-info">
+                                <h6>📚 <strong>Sobre Autenticação JWT:</strong></h6>
+                                <ul class="mb-0">
+                                    <li>Tokens JWT têm tempo limitado por segurança</li>
+                                    <li>Este sistema está configurado para <strong>1 hora</strong></li>
+                                    <li>Em sistemas reais, você implementaria refresh tokens</li>
+                                    <li>Para QA: Teste sempre cenários de token expirado</li>
+                                </ul>
+                            </div>
+                            <p>O que você gostaria de fazer?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary" onclick="this.closest('.modal').parentElement.remove()">
+                                Continuar Trabalhando
+                            </button>
+                            <button class="btn btn-primary" onclick="window.location.href='./login.html'">
+                                <i class="fas fa-sign-in-alt"></i> Renovar Sessão (Re-login)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+                document.body.appendChild(modal);
+            }
+
+            showRenewalOptions() {
+                const modal = document.createElement('div');
+                modal.innerHTML = `
+            <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5);">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header bg-info text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-refresh"></i> 
+                                Renovar Sessão
+                            </h5>
+                        </div>
+                        <div class="modal-body">
+                            <p>Para renovar sua sessão, você precisa fazer login novamente.</p>
+                            <div class="alert alert-warning">
+                                <strong>⚠️ Dados não salvos serão perdidos!</strong><br>
+                                Certifique-se de salvar qualquer trabalho em andamento.
+                            </div>
+                            
+                            <div class="alert alert-info">
+                                <h6>🎓 <strong>Para Estudantes/QA:</strong></h6>
+                                <p class="mb-0">
+                                    Este é o comportamento padrão de sistemas JWT. 
+                                    Sempre teste como sua aplicação lida com tokens expirados!
+                                </p>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary" onclick="this.closest('.modal').parentElement.remove()">
+                                Cancelar
+                            </button>
+                            <button class="btn btn-primary" onclick="window.location.href='./login.html'">
+                                <i class="fas fa-sign-in-alt"></i> Ir para Login
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+                document.body.appendChild(modal);
+            }
+
+            handleExpiredToken() {
+                clearInterval(this.timerInterval);
+
+                const modal = document.createElement('div');
+                modal.innerHTML = `
+            <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5);">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-times-circle"></i> 
+                                Sessão Expirada
+                            </h5>
+                        </div>
+                        <div class="modal-body">
+                            <p><strong>Sua sessão expirou!</strong></p>
+                            <div class="alert alert-danger">
+                                <strong>🔒 Token JWT Expirado</strong><br>
+                                Por motivos de segurança, você precisa fazer login novamente.
+                            </div>
+                            
+                            <div class="alert alert-info">
+                                <h6>📚 <strong>Conceito QA - Teste de Expiração:</strong></h6>
+                                <ul class="mb-0">
+                                    <li>✅ Sistema detectou token expirado corretamente</li>
+                                    <li>✅ Usuário foi notificado adequadamente</li>
+                                    <li>✅ Redirecionamento seguro para login</li>
+                                    <li>🧪 <strong>Cenário testado:</strong> Autenticação expirada</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-primary" onclick="window.location.href='./login.html'">
+                                <i class="fas fa-sign-in-alt"></i> Fazer Login Novamente
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+                document.body.appendChild(modal);
+
+                // Auto-redirect após 10 segundos
+                setTimeout(() => {
+                    localStorage.clear();
+                    window.location.href = './login.html';
+                }, 10000);
+            }
+
+            showEducationalInfo() {
+                // Mostrar info educacional na primeira vez - usando COOKIE para fins didáticos
+                
+                // FORÇA modal aparecer sempre para demonstração
+                console.log('🧪 DEBUG: Verificando cookie jwt_education_shown...');
+                const cookieExists = this.getCookie('jwt_education_shown');
+                console.log('🍪 Cookie atual:', cookieExists);
+                
+                if (!cookieExists) {
+                    console.log('✅ Cookie não existe - Modal vai aparecer');
+                    setTimeout(() => {
+                        const modal = document.createElement('div');
+                        modal.innerHTML = `
+                    <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5);">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header bg-primary text-white">
+                                    <h5 class="modal-title">
+                                        <i class="fas fa-graduation-cap"></i> 
+                                        Sistema de Autenticação JWT - Guia QA
+                                    </h5>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="alert alert-info">
+                                        <h6><strong>🎯 Sobre este Sistema:</strong></h6>
+                                        <ul>
+                                            <li>Tokens JWT expiram em <strong>1 hora</strong> por segurança</li>
+                                            <li>Você pode ver o tempo restante no canto superior direito</li>
+                                            <li>O sistema avisará quando restarem 5 minutos</li>
+                                            <li>Após expirar, você precisa fazer login novamente</li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <div class="alert alert-warning">
+                                        <h6><strong>🧪 Cenários para Testar:</strong></h6>
+                                        <ul>
+                                            <li>Acesso com token válido</li>
+                                            <li>Acesso com token expirado</li>
+                                            <li>Acesso sem token</li>
+                                            <li>Operações admin vs usuário comum</li>
+                                            <li>Comportamento em múltiplas abas</li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <div class="alert alert-success">
+                                        <h6><strong>✅ Boas Práticas QA:</strong></h6>
+                                        <ul class="mb-0">
+                                            <li>Sempre teste cenários de token expirado</li>
+                                            <li>Verifique se o sistema lida bem com erros de auth</li>
+                                            <li>Teste diferentes níveis de permissão</li>
+                                            <li>Valide mensagens de erro claras para usuários</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button class="btn btn-primary" onclick="console.log('🍪 Criando cookie jwt_education_shown=true'); this.closest('.modal').parentElement.remove(); window.tokenManager.setCookie('jwt_education_shown', 'true', 30); console.log('✅ Cookie criado! Verifique DevTools > Application > Cookies');">
+                                        <i class="fas fa-check"></i> Entendi! Vamos testar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                        document.body.appendChild(modal);
+                        console.log('🎓 Modal educacional adicionado ao DOM');
+                    }, 2000);
+                } else {
+                    console.log('❌ Cookie existe - Modal NÃO vai aparecer');
+                    console.log('💡 Use tokenManager.resetEducationalModal() para resetar');
+                }
+            }
+
+            destroy() {
+                if (this.timerInterval) {
+                    clearInterval(this.timerInterval);
+                }
+                const timerElement = document.getElementById('token-timer');
+                if (timerElement) {
+                    timerElement.remove();
+                }
+            }
+        }
+
+        // Inicializar quando a página carregar
+        document.addEventListener('DOMContentLoaded', function () {
+            // Verificar se é uma página admin
+            if (window.location.pathname.includes('admin')) {
+                new EducationalTokenManager();
+            }
+        });
+
+    </script>
+    <script src="js/header.js"></script>
+</body>
+
+</html>

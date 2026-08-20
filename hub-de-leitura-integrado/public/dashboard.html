@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hub de Leitura - Minha Conta</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/home.css">
+    <link rel="icon" type="image/svg+xml" href="/images/favicon.svg?v=2024">
+    <link rel="shortcut icon" href="/images/favicon.svg?v=2024">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .dashboard-card {
+            transition: transform 0.2s;
+            border-left: 4px solid #007bff;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+
+        .recent-activity {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            border-left: 3px solid #28a745;
+            padding-left: 15px;
+            margin-bottom: 15px;
+        }
+
+        .activity-item.expired {
+            border-left-color: #dc3545;
+        }
+
+        .activity-item.completed {
+            border-left-color: #6c757d;
+        }
+
+        .floating-image {
+            position: fixed;
+            top: 90px;
+            right: 300px;
+            z-index: 9999;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            transform: translateY(-90px);
+        }
+
+        .floating-image.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .floating-image img {
+            width: 130px;
+            height: 130px;
+            cursor: pointer;
+        }
+
+        .floating-image .tooltip {
+            visibility: hidden;
+            width: 150px;
+            background-color: #333;
+            color: white;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            top: 105%;
+            left: 1px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 14px;
+        }
+
+        .floating-image .tooltip::after {
+            content: "";
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: transparent transparent #333 transparent;
+        }
+
+        .floating-image:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+
+    <!-- Script para o comportamento da imagem flutuante -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const floatingImage = document.getElementById('floatingImage');
+            const heroSection = document.getElementById('home');
+
+            function handleScroll() {
+                const heroRect = heroSection.getBoundingClientRect();
+                const isHeroVisible = heroRect.bottom > 0 && heroRect.top < window.innerHeight;
+
+                if (isHeroVisible) {
+                    floatingImage.classList.add('visible');
+                } else {
+                    floatingImage.classList.remove('visible');
+                }
+            }
+
+            window.addEventListener('scroll', handleScroll);
+            handleScroll(); // Check initial state
+        });
+    </script>
+</head>
+
+<body>
+    <section id="home" class="hero-gradient text-white py-5">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto text-center fade-in"
+                style="opacity: 1; transform: translateY(0px); transition: 0.6s;">
+                <h2 class="text-5xl md:text-6xl font-bold mb-6" style="color: white;">
+                    Minha <span class="text-yellow-300" style="color: #fbbf24;">Conta</span>
+                </h2>
+                <div class="text-xl md:text-2xl mb-8 text-blue-100">
+                    <h4 style="color: #dbeafe;">Olá, <span id="user-name">Carregando...</span>!</h4>
+                    <p class="text-muted" style="color: #a5b4fc !important;">Bem-vindo ao seu espaço pessoal no Hub de
+                        Leitura</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div id="alert-container" class="alert d-none"
+        style="position: fixed; top: 80px; left: 50%; transform: translateX(-50%); z-index: 1050; max-width: 500px;">
+    </div>
+
+    <div id="header"></div>
+
+    <!-- Imagem do Booki -->
+    <div class="floating-image" id="floatingImage">
+        <a>
+            <img src="images/booki.png" alt="Leitura" data-tooltip="Booki" />
+        </a>
+        <div class="tooltip">Oie. Eu sou Booki. Que bom que você está aqui!</div>
+    </div>
+
+    <main class="container mt-5">
+
+        <!-- Cards de Estatísticas -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card text-center p-3">
+                    <i class="fas fa-bookmark fa-2x mb-2"></i>
+                    <div class="stat-number" id="active-reservations">0</div>
+                    <small>Reservas Ativas</small>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card text-center p-3">
+                    <i class="fas fa-book-reader fa-2x mb-2"></i>
+                    <div class="stat-number" id="books-read">0</div>
+                    <small>Livros Lidos</small>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card text-center p-3">
+                    <i class="fas fa-clock fa-2x mb-2"></i>
+                    <div class="stat-number" id="pending-returns">0</div>
+                    <small>Pendentes</small>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card text-center p-3">
+                    <i class="fas fa-star fa-2x mb-2"></i>
+                    <div class="stat-number" id="total-reservations">0</div>
+                    <small>Total de Reservas</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção Principal -->
+        <div class="row">
+            <!-- Coluna Esquerda - Reserva Atual -->
+            <div class="col-md-8">
+                <div class="card dashboard-card mb-4">
+                    <div class="card-header">
+                        <h5><i class="fas fa-bookmark text-primary"></i> Status da Última Reserva</h5>
+                    </div>
+                    <div class="card-body" id="latest-reservation">
+                        <div class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Carregando...</span>
+                            </div>
+                            <p class="mt-2">Carregando informações...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Atividades Recentes -->
+                <div class="card dashboard-card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-history text-primary"></i> Atividades Recentes</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="recent-activities" class="recent-activity">
+                            <div class="text-center py-3">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Carregando...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coluna Direita - Ações Rápidas -->
+            <div class="col-md-4">
+                <div class="card dashboard-card mb-4">
+                    <div class="card-header">
+                        <h5><i class="fas fa-bolt text-primary"></i> Ações Rápidas</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a href="/catalog.html" class="btn btn-primary">
+                                <i class="fas fa-search"></i> Buscar Livros
+                            </a>
+                            <a href="/basket.html" class="btn btn-outline-primary">
+                                <i class="fas fa-bookmark"></i> Cestas de Livros
+                            </a>
+                            <button id="update-account-button" class="btn btn-outline-secondary">
+                                <i class="fas fa-user-edit"></i> Atualizar Perfil
+                            </button>
+                            <hr>
+                            <button id="logout-button" class="btn btn-outline-danger">
+                                <i class="fas fa-sign-out-alt"></i> Sair da Conta
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dicas e Informações -->
+                <div class="card dashboard-card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-lightbulb text-warning"></i> Dicas</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="small">
+                            <div class="mb-3">
+                                <i class="fas fa-clock text-warning"></i>
+                                <strong>Prazo de Retirada:</strong> 48 horas após a reserva
+                            </div>
+                            <div class="mb-3">
+                                <i class="fas fa-calendar text-info"></i>
+                                <strong>Período de Empréstimo:</strong> 15 dias
+                            </div>
+                            <div class="mb-3">
+                                <i class="fas fa-redo text-success"></i>
+                                <strong>Renovações:</strong> Até 2 renovações permitidas
+                            </div>
+                            <div>
+                                <i class="fas fa-envelope text-primary"></i>
+                                <strong>Notificações:</strong> Receba lembretes por email
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer id="footer"></footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            fetch("/footer.html")
+                .then((response) => response.text())
+                .then((data) => {
+                    document.getElementById("footer").innerHTML = data;
+                })
+                .catch((error) => console.error("Erro ao carregar o footer:", error));
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Verificar autenticação
+            const token = localStorage.getItem('authToken');
+            const userName = localStorage.getItem('userName');
+
+            if (!token) {
+                window.location.href = '/login.html?redirect=' + encodeURIComponent(window.location.href);
+                return;
+            }
+
+            // Exibir nome do usuário
+            document.getElementById('user-name').textContent = userName || 'Usuário';
+
+            // Carregar dados do dashboard
+            loadDashboardData();
+
+            // Event listeners para botões
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            // Botão de atualizar cadastro
+            document.getElementById("update-account-button").addEventListener("click", () => {
+                window.location.href = "/user.html";
+            });
+
+            // Botão de logout
+            document.getElementById("logout-button").addEventListener("click", () => {
+                if (confirm('Tem certeza que deseja sair da sua conta?')) {
+                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('userId');
+                    localStorage.removeItem('userName');
+                    localStorage.removeItem('isAdmin');
+                    window.location.href = '/login.html';
+                }
+            });
+        }
+
+        function loadDashboardData() {
+            const token = localStorage.getItem('authToken');
+
+            // Carregar reservas do usuário
+            fetch('/api/reservations', {
+                headers: {
+                    'Authorization': token
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Dados recebidos da API:', data);
+
+                    // A API retorna um objeto com estrutura { reservations: [...], statistics: {...} }
+                    const reservations = data.reservations || [];
+                    const statistics = data.statistics || {};
+
+                    updateStatistics(reservations, statistics);
+                    displayLatestReservation(reservations);
+                    displayRecentActivities(reservations);
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar dados:', error);
+                    showError('Erro ao carregar informações do dashboard: ' + error.message);
+
+                    // Exibir estados vazios em caso de erro
+                    displayEmptyStates();
+                });
+        }
+
+        function displayEmptyStates() {
+            // Resetar estatísticas para 0
+            document.getElementById('active-reservations').textContent = '0';
+            document.getElementById('books-read').textContent = '0';
+            document.getElementById('pending-returns').textContent = '0';
+            document.getElementById('total-reservations').textContent = '0';
+
+            // Exibir estado vazio para última reserva
+            document.getElementById('latest-reservation').innerHTML = `
+                <div class="text-center py-4">
+                    <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                    <h5>Erro ao carregar dados</h5>
+                    <p class="text-muted">Não foi possível carregar as informações das reservas.</p>
+                    <button class="btn btn-primary" onclick="loadDashboardData()">
+                        <i class="fas fa-refresh"></i> Tentar Novamente
+                    </button>
+                </div>
+            `;
+
+            // Exibir estado vazio para atividades
+            document.getElementById('recent-activities').innerHTML = `
+                <div class="text-center py-3">
+                    <p class="text-muted">Erro ao carregar atividades</p>
+                </div>
+            `;
+        }
+
+        function getStatusBadge(status) {
+            const badges = {
+                'active': '<span class="badge bg-success"><i class="fas fa-clock"></i> Ativa</span>',
+                'expired': '<span class="badge bg-danger"><i class="fas fa-times"></i> Expirada</span>',
+                'overdue': '<span class="badge bg-danger"><i class="fas fa-exclamation-triangle"></i> Atrasada</span>',
+                'picked-up': '<span class="badge bg-info"><i class="fas fa-book"></i> Retirada</span>',
+                'completed': '<span class="badge bg-secondary"><i class="fas fa-check"></i> Concluída</span>',
+                'returned': '<span class="badge bg-secondary"><i class="fas fa-check"></i> Devolvida</span>',
+                'cancelled': '<span class="badge bg-warning"><i class="fas fa-ban"></i> Cancelada</span>'
+            };
+            return badges[status] || '<span class="badge bg-light text-dark">Desconhecido</span>';
+        }
+
+        function getStatusIcon(status) {
+            const icons = {
+                'active': '<i class="fas fa-clock text-success"></i>',
+                'expired': '<i class="fas fa-times text-danger"></i>',
+                'overdue': '<i class="fas fa-exclamation-triangle text-danger"></i>',
+                'picked-up': '<i class="fas fa-book text-info"></i>',
+                'completed': '<i class="fas fa-check text-secondary"></i>',
+                'returned': '<i class="fas fa-check text-secondary"></i>',
+                'cancelled': '<i class="fas fa-ban text-warning"></i>'
+            };
+            return icons[status] || '<i class="fas fa-question text-muted"></i>';
+        }
+
+        function updateStatistics(reservations, apiStatistics) {
+            // Usar estatísticas da API se disponíveis, senão calcular manualmente
+            if (apiStatistics && Object.keys(apiStatistics).length > 0) {
+                document.getElementById('active-reservations').textContent = apiStatistics.active || 0;
+                document.getElementById('books-read').textContent = apiStatistics.returned || 0;
+                document.getElementById('pending-returns').textContent = (apiStatistics.overdue || 0) + (apiStatistics.expired || 0);
+                document.getElementById('total-reservations').textContent =
+                    (apiStatistics.active || 0) + (apiStatistics.returned || 0) + (apiStatistics.cancelled || 0) + (apiStatistics.pickedUp || 0);
+            } else {
+                // Fallback: calcular manualmente a partir das reservas
+                const activeReservations = reservations.filter(r =>
+                    r.status === 'active' || r.calculated_status === 'active'
+                ).length;
+
+                const completedReservations = reservations.filter(r =>
+                    r.status === 'completed' || r.status === 'returned' || r.calculated_status === 'returned'
+                ).length;
+
+                const pendingReservations = reservations.filter(r =>
+                    r.calculated_status === 'expired' || r.calculated_status === 'overdue'
+                ).length;
+
+                const totalReservations = reservations.length;
+
+                document.getElementById('active-reservations').textContent = activeReservations;
+                document.getElementById('books-read').textContent = completedReservations;
+                document.getElementById('pending-returns').textContent = pendingReservations;
+                document.getElementById('total-reservations').textContent = totalReservations;
+            }
+        }
+
+        function displayLatestReservation(reservations) {
+            const container = document.getElementById('latest-reservation');
+
+            if (!reservations || reservations.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-book-open fa-3x text-muted mb-3"></i>
+                        <h5>Nenhuma reserva ainda</h5>
+                        <p class="text-muted">Que tal começar explorando nosso catálogo?</p>
+                        <a href="/catalog.html" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Buscar Livros
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+
+            // Pegar a reserva mais recente
+            const latestReservation = reservations[0];
+            const reservationDate = new Date(latestReservation.reservation_date).toLocaleDateString('pt-BR');
+            const statusBadge = getStatusBadge(latestReservation.calculated_status || latestReservation.status);
+
+            let additionalInfo = '';
+            if (latestReservation.pickup_deadline && (latestReservation.status === 'active' || latestReservation.calculated_status === 'active')) {
+                const deadline = new Date(latestReservation.pickup_deadline);
+                const now = new Date();
+                const isUrgent = deadline <= new Date(now.getTime() + 24 * 60 * 60 * 1000);
+                const deadlineStr = deadline.toLocaleDateString('pt-BR');
+
+                additionalInfo = `
+                    <div class="alert ${isUrgent ? 'alert-warning' : 'alert-info'} mt-3">
+                        <i class="fas fa-clock"></i>
+                        <strong>Prazo para retirada:</strong> ${deadlineStr}
+                        ${isUrgent ? '<br><small>⚠️ Prazo vencendo em breve!</small>' : ''}
+                    </div>
+                `;
+            } else if (latestReservation.return_deadline && latestReservation.pickup_date) {
+                const deadline = new Date(latestReservation.return_deadline);
+                const deadlineStr = deadline.toLocaleDateString('pt-BR');
+                const isOverdue = deadline < new Date();
+
+                additionalInfo = `
+                    <div class="alert ${isOverdue ? 'alert-danger' : 'alert-success'} mt-3">
+                        <i class="fas fa-calendar-alt"></i>
+                        <strong>Prazo para devolução:</strong> ${deadlineStr}
+                        ${isOverdue ? '<br><small>⚠️ Livro em atraso!</small>' : ''}
+                    </div>
+                `;
+            }
+
+            container.innerHTML = `
+                <div class="row align-items-center">
+                    <div class="col-md-3 text-center">
+                        <img src="/images/books/${latestReservation.cover_image || 'livro-padrao.png'}" 
+                             class="img-fluid rounded" style="max-height: 120px; object-fit: cover;" 
+                             alt="${latestReservation.title || 'Título não disponível'}"
+                             onerror="this.src='/images/books/livro-padrao.png'">
+                    </div>
+                    <div class="col-md-9">
+                        <h6 class="card-title">${latestReservation.title || 'Título não disponível'}</h6>
+                        <p class="text-muted mb-1">
+                            <i class="fas fa-user"></i> ${latestReservation.author || 'Autor não disponível'}
+                        </p>
+                        <p class="mb-2">
+                            <small class="text-muted">Reservado em: ${reservationDate}</small>
+                        </p>
+                        <div class="mb-2">${statusBadge}</div>
+                        ${additionalInfo}
+
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateStatistics(reservations) {
+            const activeReservations = reservations.filter(r => r.status === 'active').length;
+            const completedReservations = reservations.filter(r => r.status === 'completed').length;
+            const expiredReservations = reservations.filter(r => r.status === 'expired').length;
+            const totalReservations = reservations.length;
+
+            document.getElementById('active-reservations').textContent = activeReservations;
+            document.getElementById('books-read').textContent = completedReservations;
+            document.getElementById('pending-returns').textContent = expiredReservations;
+            document.getElementById('total-reservations').textContent = totalReservations;
+        }
+
+        function displayLatestReservation(reservations) {
+            const container = document.getElementById('latest-reservation');
+
+            if (reservations.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-book-open fa-3x text-muted mb-3"></i>
+                        <h5>Nenhuma reserva ainda</h5>
+                        <p class="text-muted">Que tal começar explorando nosso catálogo?</p>
+                        <a href="/catalog.html" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Buscar Livros
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+
+            // Pegar a reserva mais recente
+            const latestReservation = reservations[0];
+            const reservationDate = new Date(latestReservation.reservation_date).toLocaleDateString('pt-BR');
+            const statusBadge = getStatusBadge(latestReservation.status);
+
+            let additionalInfo = '';
+            if (latestReservation.pickup_deadline && latestReservation.status === 'active') {
+                const deadline = new Date(latestReservation.pickup_deadline);
+                const now = new Date();
+                const isUrgent = deadline <= new Date(now.getTime() + 24 * 60 * 60 * 1000);
+                const deadlineStr = deadline.toLocaleDateString('pt-BR');
+
+                additionalInfo = `
+                    <div class="alert ${isUrgent ? 'alert-warning' : 'alert-info'} mt-3">
+                        <i class="fas fa-clock"></i>
+                        <strong>Prazo para retirada:</strong> ${deadlineStr}
+                        ${isUrgent ? '<br><small>⚠️ Prazo vencendo em breve!</small>' : ''}
+                    </div>
+                `;
+            }
+
+            container.innerHTML = `
+                <div class="row align-items-center">
+                    <div class="col-md-3 text-center">
+                        <img src="images/books/${latestReservation.cover_image || 'livro-padrao.png'}" 
+                             class="img-fluid rounded" style="max-height: 120px; object-fit: cover;" 
+                             alt="${latestReservation.title}">
+                    </div>
+                    <div class="col-md-9">
+                        <h6 class="card-title">${latestReservation.title}</h6>
+                        <p class="text-muted mb-1">
+                            <i class="fas fa-user"></i> ${latestReservation.author}
+                        </p>
+                        <p class="mb-2">
+                            <small class="text-muted">Reservado em: ${reservationDate}</small>
+                        </p>
+                        <div class="mb-2">${statusBadge}</div>
+                        ${additionalInfo}
+
+                    </div>
+                </div>
+            `;
+        }
+
+        function displayRecentActivities(reservations) {
+            const container = document.getElementById('recent-activities');
+
+            if (!reservations || reservations.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-3">
+                        <p class="text-muted">Nenhuma atividade recente</p>
+                        <a href="/catalog.html" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-search"></i> Começar a reservar livros
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+
+            // Pegar as 5 atividades mais recentes
+            const recentActivities = reservations.slice(0, 5);
+
+            let activitiesHtml = '';
+            recentActivities.forEach(activity => {
+                const date = new Date(activity.reservation_date).toLocaleDateString('pt-BR');
+                const status = activity.calculated_status || activity.status;
+                const statusIcon = getStatusIcon(status);
+
+                activitiesHtml += `
+                    <div class="activity-item ${status}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong>${activity.title || 'Título não disponível'}</strong>
+                                <br>
+                                <small class="text-muted">${activity.author || 'Autor não disponível'}</small>
+                            </div>
+                            <div class="text-end">
+                                ${statusIcon}
+                                <br>
+                                <small class="text-muted">${date}</small>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = activitiesHtml;
+        }
+
+
+        function getStatusBadge(status) {
+            const badges = {
+                'active': '<span class="badge bg-success"><i class="fas fa-clock"></i> Ativa</span>',
+                'expired': '<span class="badge bg-danger"><i class="fas fa-times"></i> Expirada</span>',
+                'completed': '<span class="badge bg-secondary"><i class="fas fa-check"></i> Concluída</span>',
+                'cancelled': '<span class="badge bg-warning"><i class="fas fa-ban"></i> Cancelada</span>'
+            };
+            return badges[status] || '<span class="badge bg-light text-dark">Desconhecido</span>';
+        }
+
+        function getStatusIcon(status) {
+            const icons = {
+                'active': '<i class="fas fa-clock text-success"></i>',
+                'expired': '<i class="fas fa-times text-danger"></i>',
+                'completed': '<i class="fas fa-check text-secondary"></i>',
+                'cancelled': '<i class="fas fa-ban text-warning"></i>'
+            };
+            return icons[status] || '<i class="fas fa-question text-muted"></i>';
+        }
+
+        function showError(message) {
+            const alertContainer = document.getElementById('alert-container');
+            alertContainer.className = 'alert alert-danger';
+            alertContainer.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${message}`;
+            alertContainer.classList.remove('d-none');
+
+            setTimeout(() => {
+                alertContainer.classList.add('d-none');
+            }, 5000);
+        }
+    </script>
+    <script src="js/header.js"></script>
+</body>
+
+</html>
