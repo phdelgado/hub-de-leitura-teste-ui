@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/phdelgado/hub-de-leitura-teste-ui#readme",
   "devDependencies": {
-    "@faker-js/faker": "^10.6.0"
+    "@faker-js/faker": "^10.6.0",
+    "cypress": "^15.21.0"
   }
 }
