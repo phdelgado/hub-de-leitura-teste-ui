@@ -1,4 +1,5 @@
 /// <reference types="cypress" />
+
 import user from "../fixtures/usuario.json"
 
 
@@ -24,11 +25,11 @@ cy.login('usuario@teste.com', 'user123')
 });
 
 
-it.only('Deve fazer login com sucesso com conta Admin - Usando comando personalizado', () => {
+it('Deve fazer login com sucesso com conta Admin - Usando comando personalizado', () => {
 cy.login('admin@biblioteca.com', 'admin123')
 });
 
-it.only('Deve fazer login com sucesso  - Usando importação da massa de dados', () => {
+it('Deve fazer login com sucesso  - Usando importação da massa de dados', () => {
    cy.login(user.email, user.senha) 
 });
 

@@ -28,7 +28,7 @@ cy.visit('catalog.html')
         cy.get('.btn-primary').eq(2).click()
     });
 
-    it.only('Deve clicar no quinto botão Adicionar à cesta', () => {
+    it('Deve clicar no quinto botão Adicionar à cesta', () => {
         cy.get('.btn-primary').eq(4).click()
         cy.get('#global-alert-container').should('contain', 'A Metamorfose')
     });

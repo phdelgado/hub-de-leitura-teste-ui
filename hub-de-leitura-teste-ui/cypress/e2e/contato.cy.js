@@ -84,7 +84,7 @@ cy.visit('index.html')
   
   });
 
-  it.only("deve validar mensagem de erro ao enviar sem selecionar o assunto", () => {
+  it("deve validar mensagem de erro ao enviar sem selecionar o assunto", () => {
   cy.get('#name').type('Pedro')
   cy.get('#email').type('pedro@teste.com')
   cy.get('#subject').select('Sugestões')
