@@ -6,5 +6,7 @@ module.exports = {
       // implement node event listeners here
     },
     baseUrl: "http://localhost:3000/",
+    projectId: "17437x",
+    video: true
   },
 };
