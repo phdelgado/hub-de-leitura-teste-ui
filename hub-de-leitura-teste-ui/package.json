@@ -4,7 +4,14 @@
   "description": "repositório para o curso da EBAC",
   "main": "index.js",
   "scripts": {
+    "app:install": "npm install --prefix ../hub-de-leitura-integrado",
+    "app:db": "npm run db --prefix ../hub-de-leitura-integrado",
+    "app": "npm start --prefix ../hub-de-leitura-integrado",
+    "test:e2e": "start-server-and-test app http://localhost:3000 test",
     "test": "npx cypress run --browser chrome",
+    "test:hub": "npx cypress run --browser chrome --spec \"cypress/e2e/*.cy.js\"",
+    "test:seletores": "npx cypress run --browser chrome --config-file cypress.seletores.config.js",
+    "cy:open": "npx cypress open",
     "cy:report": "npx cypress run --record"
   },
   "repository": {
@@ -21,6 +28,7 @@
   "homepage": "https://github.com/phdelgado/hub-de-leitura-teste-ui#readme",
   "devDependencies": {
     "@faker-js/faker": "^10.6.0",
-    "cypress": "^15.21.0"
+    "cypress": "^15.21.0",
+    "start-server-and-test": "^3.0.12"
   }
 }

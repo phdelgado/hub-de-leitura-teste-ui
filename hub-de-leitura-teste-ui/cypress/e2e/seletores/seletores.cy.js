@@ -1,9 +1,10 @@
 ///<reference types = "cypress"/>
 
-describe('Seletores avançados com cypress', () => {
+// Página estática local: desliga o baseUrl (localhost:3000) do projeto
+describe('Seletores avançados com cypress', { baseUrl: null }, () => {
 
   beforeEach(() => {
-    cy.visit('../../seletores.html')
+    cy.visit('pages/seletores.html')
   });
 
   it('Seleciona elementos que contêm um Texto específico', () => {
