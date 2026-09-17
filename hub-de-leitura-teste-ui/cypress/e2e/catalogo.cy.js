@@ -3,25 +3,25 @@
 
 describe('Funcionalidade: Catálogo de Livros', () => {
 
-beforeEach(() => {
-cy.visit('catalog.html')
+    beforeEach(() => {
+        cy.visit('catalog.html')
     });
 
     it.skip('Deve clicar no botão Adicionar à cesta', () => {
-    cy.get(':nth-child(1) > .card > .card-body > .mt-auto > .d-grid > .btn-primary').click()
-    cy.get('#cart-count').should('contain', '1')
+        cy.get(':nth-child(1) > .card > .card-body > .mt-auto > .d-grid > .btn-primary').click()
+        cy.get('#cart-count').should('contain', '1')
     });
     
     it('Deve clicar em todos os botões Adicionar à cesta', () => {
-    cy.get('.btn-primary').click({ multiple: true })
+        cy.get('.btn-primary').click({ multiple: true })
     });
 
     it('Deve clicar no primeiro botão Adicionar à cesta', () => {
-    cy.get('.btn-primary').first().click()
+        cy.get('.btn-primary').first().click()
     });
 
     it('Deve clicar no último botão Adicionar à cesta', () => {
-      cy.get('.btn-primary').last().click()  
+        cy.get('.btn-primary').last().click()  
     });
 
     it('Deve clicar no terceiro botão Adicionar à cesta', () => {
