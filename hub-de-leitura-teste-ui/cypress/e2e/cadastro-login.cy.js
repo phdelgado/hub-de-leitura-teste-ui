@@ -7,10 +7,10 @@ describe('Funcionalidade: Cadastro e Login no Hub de Leitura', () => {
 
     it('Deve cadastrar um novo usuário e fazer login com os dados gerados', () => {
         // 1. Massa de dados gerada com Faker (timestamp garante e-mail único a cada execução)
-        const nome = faker.person.fullName()
-        const email = `${faker.internet.username()}.${Date.now()}@teste.com`.toLowerCase()
-        const telefone = '11999999999'
-        const senha = faker.internet.password({ length: 10 })
+        let nome = faker.person.fullName()
+        let email = `${faker.internet.username()}.${Date.now()}@teste.com`.toLowerCase()
+        let telefone = '11999999999'
+        let senha = faker.internet.password({ length: 10 })
 
         // 2. Cadastro do usuário - reaproveitando o page object
         cadastroPage.visitarPaginaCadastro()
