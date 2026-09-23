@@ -9,3 +9,9 @@ coverage/
 **/cypress/screenshots/
 **/cypress/videos/
 /cypress/
+
+# Projeto do curso baixado com git clone (tem .git próprio)
+hub-de-leitura-api/
+
+# Entrega do exercício de Postman (tem .git próprio)
+hub-de-leitura-postman/
