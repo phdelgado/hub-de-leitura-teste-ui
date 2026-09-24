@@ -1,0 +1,4 @@
+node_modules/
+newman/
+*.log
+.DS_Store
