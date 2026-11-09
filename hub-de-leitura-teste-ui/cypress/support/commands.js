@@ -46,3 +46,21 @@ Cypress.Commands.add('preencherCadastro', (nome, email, telefone, senha, confirm
     cy.get('#register-btn').click()
 
 })
+
+// --- Testes de API ---
+
+// Faz login e devolve o token. A API ja responde com o prefixo "Bearer ",
+// entao o valor vai direto no header Authorization, sem concatenar nada.
+Cypress.Commands.add('geraToken', (email, senha) => {
+    return cy.request({
+        method: 'POST',
+        url: 'api/login',
+        body: {
+            email: email,
+            password: senha
+        }
+    }).then((response) => {
+        expect(response.status).to.eq(200)
+        return response.body.token
+    })
+})

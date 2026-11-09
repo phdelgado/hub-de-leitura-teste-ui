@@ -1,0 +1,11 @@
+{
+  "admin": {
+    "email": "admin@biblioteca.com",
+    "senha": "admin123"
+  },
+  "comum": {
+    "email": "usuario@teste.com",
+    "senha": "user123"
+  },
+  "senhaIncorreta": "senha_errada_123"
+}
