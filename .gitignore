@@ -15,3 +15,6 @@ coverage/
 
 # Projeto do curso baixado com git clone (tem .git próprio e fica fora daqui)
 hub-de-leitura-api/
+
+# Projeto de CI/CD do curso (tem .git e remote próprios, versionado à parte)
+ci-cd-teste-exemplo/
